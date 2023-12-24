@@ -1,67 +1,78 @@
 name: release
 on:
-  push:
-    tags:
-      - '*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version'
+        required: true
 
-permissions:
-  contents: write
+env:
+  JAVA_VERSION: '17'
+  JAVA_DISTRO: 'temurin'
 
 jobs:
-  build:
-    name: Build
+  precheck:
+    name: Precheck
     runs-on: ubuntu-latest
-    timeout-minutes: 90
-    strategy:
-      fail-fast: false
+    outputs:
+      VERSION: ${{ steps.vars.outputs.VERSION }}
     steps:
-      - name: Environment
-        run: env | sort
-      - uses: actions/checkout@v4
-      - name: Set up JDK 17 for x64
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Version
+        id: vars
+        shell: bash
+        run: |
+          VERSION=${{ github.event.inputs.version }}
+          sed -ir "s/^[#]*\s*version=.*/version=$VERSION/" gradle.properties
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "GitHub Action"
+          git commit -a -m "Releasing version $VERSION"
+          git push origin main
+
+  release:
+    needs: [ precheck ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Java
         uses: actions/setup-java@v3
         with:
-          java-version: '17'
-          distribution: 'temurin'
-          architecture: x64
-      - name: Compile
-        run: ./gradlew assemble
-      - name: Test
-        run: ./gradlew test
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRO }}
 
-  publish-gpr:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up JDK 17 for x64
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          architecture: x64
-      - name: version
-        run: echo "::set-output name=version::$(./gradlew properties -q | awk '/^version:/ {print $2}')"
-        id: version
-
-      - name: release
-        uses: actions/create-release@v1
-        id: create_release
-        with:
-          draft: false
-          prerelease: false
-          release_name: ${{ steps.version.outputs.version }}
-          tag_name: ${{ github.ref }}
-          body_path: CHANGELOG.md
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
-
-      - name: build artifacts
+      - name: Build
         run: ./gradlew jsonPlugin
 
-      - name: Upload artifact and release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Prepare
+        run: ./gradlew jreleaserConfig
+        env:
+          JRELEASER_PROJECT_VERSION: ${{ needs.precheck.outputs.VERSION }}
+          JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Assemble
+        run: ./gradlew jreleaserAssemble
+        env:
+          JRELEASER_PROJECT_VERSION: ${{ needs.precheck.outputs.VERSION }}
+          JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Release
+        run: ./gradlew jreleaserRelease
+        env:
+          JRELEASER_PROJECT_VERSION: ${{ needs.precheck.outputs.VERSION }}
+          JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: JReleaser output
+        if: always()
+        uses: actions/upload-artifact@v3
         with:
-          files: |
-            ./build/plugin/*
+          name: jreleaser-release
+          path: |
+            build/jreleaser/trace.log
+            build/jreleaser/output.properties

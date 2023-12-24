@@ -5,6 +5,8 @@ plugins {
     id "groovy"
     id "idea"
     id 'org.asciidoctor.jvm.convert'
+    id 'maven-publish'
+    id 'org.jreleaser' version '1.9.0'
 }
 apply plugin: NextflowPlugin
 
@@ -53,3 +55,48 @@ jar {
     }
 }
 
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+
+jreleaser {
+    project {
+        authors = [publish_developer]
+        license = 'Apache-2.0'
+        links {
+            homepage = publish_url
+        }
+        inceptionYear = publish_year
+        description publish_description
+    }
+
+    distributions {
+        app {
+            active = 'ALWAYS'
+            artifact {
+                path = 'build/plugin/{{projectName}}-{{projectVersion}}.zip'
+            }
+            artifact {
+                path = 'build/plugin/{{projectName}}-{{projectVersion}}-meta.json'
+            }
+        }
+    }
+
+    release {
+        github {
+            enabled = true
+            repoOwner = publish_repoOwner
+            overwrite = true
+            changelog{
+                formatted "ALWAYS"
+                contributors {
+                    format = '- {{contributorName}}{{#contributorUsernameAsLink}} ({{.}}){{/contributorUsernameAsLink}}'
+                }
+            }
+            token = System.properties['JRELEASER_GITHUB_TOKEN'] ?: findProperty('JRELEASER_GITHUB_TOKEN')
+        }
+    }
+
+}

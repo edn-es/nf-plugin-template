@@ -1,6 +1,6 @@
 = nf-plugin-template: a Nextflow Plugin Template
 Jorge Aguilera <jagedn@gmail.com>
-v0.0.2
+v0.0.1
 :toc: left
 
 nf-plugin-template is a gradle template to create Nextflow plugins
@@ -18,21 +18,33 @@ https://github.com/jagedn/nf-plugin-template/
 - ready to publish GitHub releases
 - asciidoctor documentation + GitHub Pages
 
-== Steps
+== Changes
 
-INFO:: From version 0.3.0 you *don't* need to specify the pluginClassName in the `nextflow`
-closure configuration as the gradle tasks will scan for it
+This is a fork of the original jagedn/nf-plugin-template repository. In case you're using
+original repo this new repo contains:
+
+- publish releases using jreleaser instead github actions
+
+== Steps
 
 - Create a new Github project using this template
 - Clone in a directory with the name of your new plugin, i.e.
 `nf-my-awesome-plugin`
 
-- Specify your github account in `nf-plugin.gradle` file
+- configure all details about your project:
 
 .nf-plugin.gradle
 ----
-nextflowPlugin{
-    githubOrganization = 'YOUR_GITHUB_ACCOUNT'
+group 'es.edn'
+
+ext{
+    publish_description = 'An unofficial template to build Nextflow Plugins'
+    publish_url = 'https://github.com/edn-es/nf-plugin-template'
+    publish_year = '2023'
+    publish_developer = 'jagedn'
+    publish_developerName = 'Jorge Aguilera'
+    publish_git = 'scm:git:https://github.com/edn-es/nf-plugin-template.git'
+    publish_repoOwner = 'edn-es'
 }
 ----
 
