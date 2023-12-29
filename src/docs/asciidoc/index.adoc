@@ -23,7 +23,7 @@ https://github.com/jagedn/nf-plugin-template/
 This is a fork of the original jagedn/nf-plugin-template repository. In case you're using
 original repo this new repo contains:
 
-_ use gradle.properties to configure required variables
+- use gradle.properties to configure required variables
 - publish releases using JReleaser
 
 
