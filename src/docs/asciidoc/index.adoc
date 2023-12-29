@@ -23,7 +23,9 @@ https://github.com/jagedn/nf-plugin-template/
 This is a fork of the original jagedn/nf-plugin-template repository. In case you're using
 original repo this new repo contains:
 
-- publish releases using jreleaser instead github actions
+_ use gradle.properties to configure required variables
+- publish releases using JReleaser
+
 
 == Steps
 
@@ -33,25 +35,18 @@ original repo this new repo contains:
 
 - configure all details about your project:
 
-.nf-plugin.gradle
+.gradle.properties
 ----
-group 'es.edn'
-
-ext{
-    publish_description = 'An unofficial template to build Nextflow Plugins'
-    publish_url = 'https://github.com/edn-es/nf-plugin-template'
-    publish_year = '2023'
-    publish_developer = 'jagedn'
-    publish_developerName = 'Jorge Aguilera'
-    publish_git = 'scm:git:https://github.com/edn-es/nf-plugin-template.git'
-    publish_repoOwner = 'edn-es'
-}
+publish_description = An unofficial template to build Nextflow Plugins
+publish_url = https://github.com/edn-es/nf-plugin-template
+publish_year = 2023
+publish_developer = jagedn
+publish_developerName = Jorge Aguilera
+publish_git = scm:git:https://github.com/edn-es/nf-plugin-template.git
+publish_repoOwner = edn-es
 ----
 
-`githubOrganization` is used in case you want to publish in GitHub your plugin.
-
-
-- add your dependencies
+- add your dependencies. For example, add apache poi libs from mavenCentral
 
 .nf-plugin.gradle
 ----
@@ -71,16 +66,28 @@ dependencies {
 You *don't* need to create the extensions points file (`src/main/resources/META-INF/extensions.idx`)
 as `registerIdx` task will scan your sources and build it
 
-*and this is all*, you can run `./gradlew jsonPlugin` to generate Nextflow's artifacts
+*and this is all*, you can run for example `./gradlew jsonPlugin` to generate Nextflow's artifacts
+
+== Test
+
+You can/need to create as many tests you consider. This template includes
+a full example running a pipeline and checking the result
 
 == Tasks
 
-You can find new gradle tasks in `nextflow` group
+INFO:: You can find new gradle tasks in `nextflow` group
 
 - `generateIdx`, scan sources and generate the `extensions.idx` resource
 - `zipPlugin` , compile and package your plugin in a zip file ready to be used by Nextflow
 - `unzipPlugin` , extract the zip file into your $HOME/.nextflow/plugins so you can use it in pipelines
 - `jsonPlugin`, create the json spec required by nextflow to publish a plugin
+
+A typical scenario can be, once you've created/implemented some logic in your plugin, you've created some test
+but want to see in action in a pipeline. You can run the `unzipPlugin` task, and it will install the plugin into
+your $HOME/.nextflow/plugin directory
+
+Or you can run the pipeline using the NXF_PLUGINS_TEST_REPOSITORY env with your `build/plugins` directory
+
 
 == Documentation
 
@@ -90,3 +97,9 @@ You can write your documentation at `src/docs/asciidoc` and run `./gradlew ascii
 at `build/doc` directory.
 
 Remember to prepare your GitHub repository with GH Pages (go to Settings, Pages and select `GitHub Actions` as source) and your documentation will be published automagically
+
+== Release
+
+This template uses `JReleaser` to publish releases in GitHub (publish in MavenCentral soon). Also you can use
+the `release` GitHub action to run it (it only requires you specify which version are you deploying)
+
