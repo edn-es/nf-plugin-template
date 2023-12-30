@@ -68,6 +68,10 @@ as `registerIdx` task will scan your sources and build it
 
 *and this is all*, you can run for example `./gradlew jsonPlugin` to generate Nextflow's artifacts
 
+== Configuration
+
+This template includes an `ExampleConfiguration` to show you how to make your plugin configurable
+
 == Test
 
 You can/need to create as many tests you consider. This template includes
