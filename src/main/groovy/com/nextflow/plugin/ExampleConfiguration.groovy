@@ -9,7 +9,7 @@ class ExampleConfiguration {
 
     ExampleConfiguration(Map map){
         def config = map ?: Collections.emptyMap()
-        maxSize = (config.maxSize ?: 10) as int
+        maxSize = (config.maxSize ?: 1000) as int
     }
 
     int getMaxRandomSizeString(){
