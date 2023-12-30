@@ -69,4 +69,21 @@ class PluginTest extends Dsl2Spec{
         result.val.size() == 20
         result.val == Channel.STOP
     }
+
+    def 'should use a configuration' () {
+        when:
+        def SCRIPT = '''
+            include {randomString} from 'plugin/nf-plugin-template'
+            channel
+                .of( randomString(20) )      
+            '''
+        and:
+        def result = new MockScriptRunner([
+                example:[
+                        maxSize : 5
+                ]]).setScript(SCRIPT).execute()
+        then:
+        result.val.size() == 5
+        result.val == Channel.STOP
+    }
 }
