@@ -10,6 +10,8 @@ plugins {
 }
 apply plugin: NextflowPlugin
 
+group 'es.edn'
+
 repositories {
     mavenCentral()
 }
@@ -61,6 +63,47 @@ java {
 }
 
 
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = "$project.group"
+            artifactId = "$project.name"
+
+            from components.java
+
+            pom {
+                name = "$project.name"
+                description = 'Nextflow Plugin'
+                url = 'https://github.com/edn-es/nf-plugin-template'
+                inceptionYear = '2023'
+                licenses {
+                    license {
+                        name = 'Apache-2.0'
+                        url = 'https://spdx.org/licenses/Apache-2.0.html'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'jagedn'
+                        name = 'Jorge Aguilera'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:https://github.com/edn-es/nf-plugin-template.git'
+                    developerConnection = 'scm:git:ssh://github.com/edn-es/nf-plugin-template.git'
+                    url = 'http://github.com/edn-es/nf-plugin-template'
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            url = layout.buildDirectory.dir('staging-deploy')
+        }
+    }
+}
+
 jreleaser {
     project {
         authors = [publish_developer]
@@ -99,4 +142,21 @@ jreleaser {
         }
     }
 
+    signing {
+        active = 'ALWAYS'
+        armored = true
+    }
+    deploy {
+        maven {
+            nexus2 {
+                create("maven-central") {
+                    active = 'ALWAYS'
+                    url = "https://s01.oss.sonatype.org/service/local"
+                    closeRepository = true
+                    releaseRepository = true
+                    stagingRepositories.add("build/staging-deploy")
+                }
+            }
+        }
+    }
 }
