@@ -99,4 +99,21 @@ jreleaser {
         }
     }
 
+    signing {
+        active = 'ALWAYS'
+        armored = true
+    }
+    deploy {
+        maven {
+            nexus2 {
+                create("maven-central") {
+                    active = 'ALWAYS'
+                    url = "https://s01.oss.sonatype.org/service/local"
+                    closeRepository = true
+                    releaseRepository = true
+                    stagingRepositories.add("build/staging-deploy")
+                }
+            }
+        }
+    }
 }
